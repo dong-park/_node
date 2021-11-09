@@ -12,6 +12,7 @@ app.use((req, res, next) => {
 
 app.get("/", (req,res) => {
     res.sendfile(path.join(__dirname, "index.html"));
+    //res.send("sendfile 이나 send 를 두번하면 에러납니다");
 })
 
 app.get("/users", (req, res) => {
