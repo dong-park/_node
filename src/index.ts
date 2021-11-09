@@ -10,9 +10,22 @@ app.use((req, res, next) => {
     next();
 })
 
-app.get("/", (req,res) => {
+app.get("/", (req, res, next) => {
     res.sendfile(path.join(__dirname, "index.html"));
     //res.send("sendfile 이나 send 를 두번하면 에러납니다");
+
+    if(true) {
+        next("route")
+    } else {
+        next();
+    }
+
+}, (req, res) => {
+    res.send("그냥 넥스트 일때 여기먼저 실행됨")
+})
+
+app.get("/", (req, res) => {
+    res.send("라우트로 넘기면 여기가 실행됨");
 })
 
 app.get("/users", (req, res) => {
@@ -22,7 +35,7 @@ app.get("/users", (req, res) => {
 })
 
 app.get("/users/:id", (req, res) => {
-    res.send( {
+    res.send({
         response: `${req.params.id}번째 손님입니다.`
     })
 })
