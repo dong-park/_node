@@ -2,8 +2,33 @@ import "reflect-metadata";
 import * as console from "console";
 import * as path from "path";
 
+const morgan = require("morgan");
+const session = require("express-session");
+const cookieParser = require("cookie-parser");
 const express = require("express");
 const app = express();
+
+app.use(morgan("dev")) // morgan => logging middleware
+app.use(cookieParser("dongpark")); // cookieParser(secret)
+app.use(session({
+    resave: false,
+    saveUninitialized: false,
+    secret: "dongpark",
+    cookie: {
+        httpOnly: true
+    }
+}))
+app.use(express.json()); // body의 헤더가 json으로 되어 들어오는 것들을 파싱해준다.
+app.use(express.urlencoded({extended: true})) // url 파라미터들 인코딩되어 들어오게 해준다.
+
+// 미들웨어 확장법, 세션아이디가 존재하는 경우에만 static path 를 제공해주는 경우의 예
+app.use("/", (req, res, next) => {
+    if (req.session.id) {
+        express.static(__dirname, "public")
+    } else {
+        next();
+    }
+})
 
 app.use((req, res, next) => {
     console.log("모든 요청에 실행하고 싶어요.");
@@ -14,7 +39,7 @@ app.get("/", (req, res, next) => {
     res.sendfile(path.join(__dirname, "index.html"));
     //res.send("sendfile 이나 send 를 두번하면 에러납니다");
 
-    if(true) {
+    if (true) {
         next("route")
     } else {
         next();
