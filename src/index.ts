@@ -6,6 +6,7 @@ const morgan = require("morgan");
 const session = require("express-session");
 const cookieParser = require("cookie-parser");
 const express = require("express");
+const multer = require("multer")
 const app = express();
 
 app.use(morgan("dev")) // morgan => logging middleware
@@ -22,12 +23,31 @@ app.use(express.json()); // body의 헤더가 json으로 되어 들어오는 것
 app.use(express.urlencoded({extended: true})) // url 파라미터들 인코딩되어 들어오게 해준다.
 
 // 미들웨어 확장법, 세션아이디가 존재하는 경우에만 static path 를 제공해주는 경우의 예
-app.use("/", (req, res, next) => {
-    if (req.session.id) {
-        express.static(__dirname, "public")
-    } else {
-        next();
-    }
+// app.use("/", (req, res, next) => {
+//     if (req.session.id) {
+//         express.static(__dirname, "public")
+//     } else {
+//         next();
+//     }
+// })
+
+/// multer upload 객체 생성
+const upload = multer({
+    storage: multer.diskStorage({
+        destination(req, file, done) {
+            done(null, "uploads/");
+        },
+        filename(req, file, done) {
+            const ext = path.extname(file.originalname);
+            done(null, path.basename(file.originalname, ext) + Date.now() + ext);
+        }
+    }),
+    limits: { fileSize: 5 * 1024 * 1024 }
+})
+
+app.post("/upload", upload.single("image"), (req, res) => {
+    console.log(req.image);
+    res.send("ok");
 })
 
 app.use((req, res, next) => {
@@ -36,17 +56,17 @@ app.use((req, res, next) => {
 })
 
 app.get("/", (req, res, next) => {
-    res.sendfile(path.join(__dirname, "index.html"));
+    // res.sendfile(path.join(__dirname, "index.html"));
     //res.send("sendfile 이나 send 를 두번하면 에러납니다");
 
-    if (true) {
+    if (false) {
         next("route")
     } else {
         next();
     }
-
 }, (req, res) => {
-    res.send("그냥 넥스트 일때 여기먼저 실행됨")
+    res.sendfile(path.join(__dirname, "index.html"));
+    // res.send("그냥 넥스트 일때 여기먼저 실행됨")
 })
 
 app.get("/", (req, res) => {
